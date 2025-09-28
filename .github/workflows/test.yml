@@ -1,0 +1,183 @@
+name: Test Commit or Rewrite Action
+
+on:
+  pull_request:
+  push:
+    branches: [test-action-workflow]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test-basic:
+    name: Test Basic Commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Create test file
+        run: |
+          echo "Test content $(date)" > test-file.txt
+
+      - name: Test first commit (should create new)
+        uses: ./
+        with:
+          commit_message: 'test: automated test commit'
+          id: 'test-basic'
+          files: test-file.txt
+
+  test-rewrite:
+    name: Test Rewrite Functionality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Create first test file
+        run: |
+          echo "Initial content" > rewrite-test.txt
+
+      - name: First commit with ID
+        uses: ./
+        with:
+          commit_message: 'test: rewrite test - initial'
+          id: 'rewrite-test'
+          files: rewrite-test.txt
+
+      - name: Modify the file
+        run: |
+          echo "Updated content $(date)" > rewrite-test.txt
+
+      - name: Second commit with same ID (should rewrite)
+        uses: ./
+        with:
+          commit_message: 'test: rewrite test - updated'
+          id: 'rewrite-test'
+          files: rewrite-test.txt
+
+  test-multiple-files:
+    name: Test Multiple Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Create multiple files
+        run: |
+          mkdir -p test-dir
+          echo "File 1" > test-dir/file1.txt
+          echo "File 2" > test-dir/file2.txt
+          echo "File 3" > test-dir/file3.txt
+
+      - name: Commit multiple files
+        uses: ./
+        with:
+          commit_message: |
+            test: multiple files commit
+
+            Testing with multiple files in a directory
+          id: 'multi-file-test'
+          files: |
+            test-dir/file1.txt
+            test-dir/file2.txt
+            test-dir/file3.txt
+
+  test-all-changes:
+    name: Test Commit All Changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Create various changes
+        run: |
+          echo "New file" > new-file.txt
+          mkdir -p nested/deep
+          echo "Nested file" > nested/deep/file.txt
+          echo "Another file" > another.txt
+
+      - name: Commit all changes (no files specified)
+        uses: ./
+        with:
+          commit_message: 'test: commit all changes'
+          id: 'all-changes-test'
+
+  test-auto-branch-detection:
+    name: Test Auto Branch Detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Create test content
+        run: |
+          echo "Branch detection test" > branch-test.txt
+
+      - name: Commit without specifying branch
+        uses: ./
+        with:
+          commit_message: 'test: auto branch detection'
+          id: 'branch-test'
+          files: branch-test.txt
+
+      - name: Verify commit was created
+        run: |
+          git log -1 --oneline
+          git log -1 --format="%B" | grep -q "X-Commit-Rewrite-ID: branch-test" || (echo "Trailer not found!" && exit 1)
+
+  test-sequential-rewrites:
+    name: Test Sequential Rewrites
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Initial commit
+        run: |
+          echo "Version 1" > sequential.txt
+
+      - name: Commit v1
+        uses: ./
+        with:
+          commit_message: 'test: sequential v1'
+          id: 'sequential-test'
+          files: sequential.txt
+
+      - name: Update to v2
+        run: |
+          echo "Version 2" > sequential.txt
+
+      - name: Rewrite to v2
+        uses: ./
+        with:
+          commit_message: 'test: sequential v2'
+          id: 'sequential-test'
+          files: sequential.txt
+
+      - name: Update to v3
+        run: |
+          echo "Version 3" > sequential.txt
+
+      - name: Rewrite to v3
+        uses: ./
+        with:
+          commit_message: 'test: sequential v3'
+          id: 'sequential-test'
+          files: sequential.txt
+
+      - name: Verify only one commit exists
+        run: |
+          COMMIT_COUNT=$(git log --oneline --grep="sequential" | wc -l)
+          echo "Found $COMMIT_COUNT commits with 'sequential'"
+          if [ "$COMMIT_COUNT" -ne 1 ]; then
+            echo "Expected 1 commit, found $COMMIT_COUNT"
+            exit 1
+          fi
