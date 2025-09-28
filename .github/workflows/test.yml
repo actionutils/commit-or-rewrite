@@ -16,8 +16,7 @@ jobs:
       # First checkout the action code from the PR/push branch
       - uses: actions/checkout@v4
         with:
-          path: action
-          fetch-depth: 2
+          path: .action
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
@@ -28,14 +27,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: test-branch-basic
-          fetch-depth: 2
 
       - name: Create test file
         run: |
           echo "Test content $(date)" > test-file.txt
 
       - name: Test first commit (should create new)
-        uses: ./action
+        uses: ./.action
         with:
           commit_message: 'test: automated test commit'
           id: 'test-basic'
@@ -46,8 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: action
-          fetch-depth: 2
+          path: .action
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
@@ -57,14 +54,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: test-branch-rewrite
-          fetch-depth: 2
 
       - name: Create first test file
         run: |
           echo "Initial content" > rewrite-test.txt
 
       - name: First commit with ID
-        uses: ./action
+        uses: ./.action
         with:
           commit_message: 'test: rewrite test - initial'
           id: 'rewrite-test'
@@ -75,7 +71,7 @@ jobs:
           echo "Updated content $(date)" > rewrite-test.txt
 
       - name: Second commit with same ID (should rewrite)
-        uses: ./action
+        uses: ./.action
         with:
           commit_message: 'test: rewrite test - updated'
           id: 'rewrite-test'
@@ -86,8 +82,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: action
-          fetch-depth: 2
+          path: .action
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
@@ -97,7 +92,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: test-branch-multi
-          fetch-depth: 2
 
       - name: Create multiple files
         run: |
@@ -107,7 +101,7 @@ jobs:
           echo "File 3" > test-dir/file3.txt
 
       - name: Commit multiple files
-        uses: ./action
+        uses: ./.action
         with:
           commit_message: |
             test: multiple files commit
@@ -124,8 +118,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: action
-          fetch-depth: 2
+          path: .action
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
@@ -135,7 +128,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: test-branch-all
-          fetch-depth: 2
 
       - name: Create various changes
         run: |
@@ -145,7 +137,7 @@ jobs:
           echo "Another file" > another.txt
 
       - name: Commit all changes (no files specified)
-        uses: ./action
+        uses: ./.action
         with:
           commit_message: 'test: commit all changes'
           id: 'all-changes-test'
@@ -155,8 +147,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: action
-          fetch-depth: 2
+          path: .action
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
@@ -166,14 +157,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: test-branch-auto
-          fetch-depth: 2
 
       - name: Create test content
         run: |
           echo "Branch detection test" > branch-test.txt
 
       - name: Commit without specifying branch
-        uses: ./action
+        uses: ./.action
         with:
           commit_message: 'test: auto branch detection'
           id: 'branch-test'
@@ -189,8 +179,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: action
-          fetch-depth: 2
+          path: .action
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
@@ -200,14 +189,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: test-branch-sequential
-          fetch-depth: 2
 
       - name: Initial commit
         run: |
           echo "Version 1" > sequential.txt
 
       - name: Commit v1
-        uses: ./action
+        uses: ./.action
         with:
           commit_message: 'test: sequential v1'
           id: 'sequential-test'
@@ -218,7 +206,7 @@ jobs:
           echo "Version 2" > sequential.txt
 
       - name: Rewrite to v2
-        uses: ./action
+        uses: ./.action
         with:
           commit_message: 'test: sequential v2'
           id: 'sequential-test'
@@ -229,7 +217,7 @@ jobs:
           echo "Version 3" > sequential.txt
 
       - name: Rewrite to v3
-        uses: ./action
+        uses: ./.action
         with:
           commit_message: 'test: sequential v3'
           id: 'sequential-test'
