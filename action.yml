@@ -8,8 +8,9 @@ inputs:
     description: 'Unique identifier for the trailer (e.g., changelog-update)'
     required: true
   branch:
-    description: 'Target branch'
-    required: true
+    description: 'Target branch (auto-detects current branch if not specified)'
+    required: false
+    default: ''
   files:
     description: 'Files to commit (newline-separated). If empty, commits all changes'
     required: false
@@ -22,6 +23,22 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Detect branch if not specified
+      id: detect-branch
+      shell: bash
+      env:
+        INPUT_BRANCH: ${{ inputs.branch }}
+      run: |
+        if [ -n "$INPUT_BRANCH" ]; then
+          echo "Using specified branch: $INPUT_BRANCH"
+          echo "branch=$INPUT_BRANCH" >> $GITHUB_OUTPUT
+        else
+          # Auto-detect current branch
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          echo "Auto-detected branch: $CURRENT_BRANCH"
+          echo "branch=$CURRENT_BRANCH" >> $GITHUB_OUTPUT
+        fi
+
     - name: Check for changes
       id: check-changes
       shell: bash
@@ -76,7 +93,7 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
-        BRANCH: ${{ inputs.branch }}
+        BRANCH: ${{ steps.detect-branch.outputs.branch }}
         PARENT_SHA: ${{ steps.check-trailer.outputs.parent_sha }}
         GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
@@ -94,7 +111,7 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
-        BRANCH: ${{ inputs.branch }}
+        BRANCH: ${{ steps.detect-branch.outputs.branch }}
         FILES_LIST: ${{ steps.check-changes.outputs.files_list }}
         COMMIT_MESSAGE: ${{ inputs.commit_message }}
         TRAILER_ID: ${{ inputs.trailer_id }}
@@ -120,7 +137,7 @@ runs:
       if: steps.check-changes.outputs.has_changes == 'true'
       shell: bash
       env:
-        BRANCH: ${{ inputs.branch }}
+        BRANCH: ${{ steps.detect-branch.outputs.branch }}
       run: |
         echo "Syncing local git state with remote branch: $BRANCH"
         # Fetch the latest state of the branch

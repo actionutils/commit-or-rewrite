@@ -37,7 +37,7 @@ All these methods result in verified commits without requiring GPG key configura
   with:
     commit_message: 'Update dependencies'
     trailer_id: 'deps-update'
-    branch: 'main'
+    # branch is optional - auto-detects current branch if not specified
 ```
 
 ### Commit Specific Files
@@ -76,7 +76,7 @@ All these methods result in verified commits without requiring GPG key configura
 |-------|-------------|----------|---------|
 | `commit_message` | Commit message (can be multiline) | Yes | - |
 | `trailer_id` | Unique identifier for the trailer (e.g., `changelog-update`) | Yes | - |
-| `branch` | Target branch | Yes | - |
+| `branch` | Target branch (auto-detects current branch if not specified) | No | `''` (auto-detect) |
 | `files` | Files to commit (newline-separated). If empty, commits all changes | No | `''` (all changes) |
 | `github_token` | GitHub token for API operations | No | `${{ github.token }}` |
 
