@@ -24,15 +24,13 @@ jobs:
         with:
           branch: test-branch-basic
 
-      # Then checkout the test branch to a different directory
+      # Then checkout the test branch to current directory
       - uses: actions/checkout@v4
         with:
           ref: test-branch-basic
-          path: test-repo
           fetch-depth: 2
 
       - name: Create test file
-        working-directory: test-repo
         run: |
           echo "Test content $(date)" > test-file.txt
 
@@ -59,11 +57,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: test-branch-rewrite
-          path: test-repo
           fetch-depth: 2
 
       - name: Create first test file
-        working-directory: test-repo
         run: |
           echo "Initial content" > rewrite-test.txt
 
@@ -75,7 +71,6 @@ jobs:
           files: rewrite-test.txt
 
       - name: Modify the file
-        working-directory: test-repo
         run: |
           echo "Updated content $(date)" > rewrite-test.txt
 
@@ -102,11 +97,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: test-branch-multi
-          path: test-repo
           fetch-depth: 2
 
       - name: Create multiple files
-        working-directory: test-repo
         run: |
           mkdir -p test-dir
           echo "File 1" > test-dir/file1.txt
@@ -142,11 +135,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: test-branch-all
-          path: test-repo
           fetch-depth: 2
 
       - name: Create various changes
-        working-directory: test-repo
         run: |
           echo "New file" > new-file.txt
           mkdir -p nested/deep
@@ -175,11 +166,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: test-branch-auto
-          path: test-repo
           fetch-depth: 2
 
       - name: Create test content
-        working-directory: test-repo
         run: |
           echo "Branch detection test" > branch-test.txt
 
@@ -191,7 +180,6 @@ jobs:
           files: branch-test.txt
 
       - name: Verify commit was created
-        working-directory: test-repo
         run: |
           git log -1 --oneline
           git log -1 --format="%B" | grep -q "X-Commit-Rewrite-ID: branch-test" || (echo "Trailer not found!" && exit 1)
@@ -212,11 +200,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: test-branch-sequential
-          path: test-repo
           fetch-depth: 2
 
       - name: Initial commit
-        working-directory: test-repo
         run: |
           echo "Version 1" > sequential.txt
 
@@ -228,7 +214,6 @@ jobs:
           files: sequential.txt
 
       - name: Update to v2
-        working-directory: test-repo
         run: |
           echo "Version 2" > sequential.txt
 
@@ -240,7 +225,6 @@ jobs:
           files: sequential.txt
 
       - name: Update to v3
-        working-directory: test-repo
         run: |
           echo "Version 3" > sequential.txt
 
@@ -252,7 +236,6 @@ jobs:
           files: sequential.txt
 
       - name: Verify only one commit exists
-        working-directory: test-repo
         run: |
           COMMIT_COUNT=$(git log --oneline --grep="sequential" | wc -l)
           echo "Found $COMMIT_COUNT commits with 'sequential'"
