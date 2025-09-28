@@ -103,8 +103,8 @@ runs:
 
         X-Commit-Rewrite-ID: ${TRAILER_ID}"
 
-        # Get the script path relative to the repository root
-        SCRIPT_PATH="${GITHUB_WORKSPACE}/scripts/run-ghcp.sh"
+        # Get the script path relative to the action directory
+        SCRIPT_PATH="${{ github.action_path }}/run-ghcp.sh"
 
         # Commit using ghcp
         "$SCRIPT_PATH" -- commit \
