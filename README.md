@@ -167,28 +167,16 @@ jobs:
     files: 'dist/'
 ```
 
-## Why Use This Action?
+## Permissions
 
-### Without This Action
-- Multiple automated commits clutter history
-- "Update dependencies" × 10 commits
-- Manual squashing/rebasing needed
-- Complex GPG setup for verified commits
+This action requires `contents: write` permission to create and modify commits.
 
-### With This Action
-- ✅ Clean history with automatic rewriting
-- ✅ Automatic verified/signed commits
-- ✅ No commit spam from automation
-- ✅ No GPG configuration needed
-- ✅ Predictable rewrite behavior
+```yaml
+permissions:
+  contents: write
+```
 
-## Requirements
-
-- The workflow must have write permissions to the repository (`contents: write`)
-- When using custom tokens:
-  - Fine-grained PATs: Need `contents: write` permission
-  - GitHub Apps: Need `contents: write` permission
-  - Classic PATs: Need `repo` scope
+When using custom tokens (GitHub Apps or Fine-grained PATs), ensure they have `contents: write` permission.
 
 ## Future Features
 
@@ -200,11 +188,3 @@ We're considering adding support for:
 ## License
 
 MIT
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Support
-
-For issues and feature requests, please use the [GitHub Issues](https://github.com/actionutils/commit-or-rewrite/issues) page.
