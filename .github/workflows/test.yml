@@ -13,18 +13,18 @@ jobs:
   test-basic:
     runs-on: ubuntu-latest
     steps:
-      - name: Get short SHA
-        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-        id: sha
+      - name: Generate branch name
+        run: echo "name=test-branch-basic-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
-          branch: test-branch-basic-${{ steps.sha.outputs.short }}
+          branch: ${{ steps.branch.outputs.name }}
 
       - uses: actions/checkout@v4
         with:
-          ref: test-branch-basic-${{ steps.sha.outputs.short }}
+          ref: ${{ steps.branch.outputs.name }}
 
       - name: Create test file
         run: |
@@ -40,23 +40,23 @@ jobs:
       - name: Cleanup test branch
         if: always()
         run: |
-          git push origin --delete "test-branch-basic-${{ steps.sha.outputs.short }}" || true
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true
 
   test-rewrite:
     runs-on: ubuntu-latest
     steps:
-      - name: Get short SHA
-        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-        id: sha
+      - name: Generate branch name
+        run: echo "name=test-branch-rewrite-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
-          branch: test-branch-rewrite-${{ steps.sha.outputs.short }}
+          branch: ${{ steps.branch.outputs.name }}
 
       - uses: actions/checkout@v4
         with:
-          ref: test-branch-rewrite-${{ steps.sha.outputs.short }}
+          ref: ${{ steps.branch.outputs.name }}
 
       - name: Create first test file
         run: |
@@ -83,23 +83,23 @@ jobs:
       - name: Cleanup test branch
         if: always()
         run: |
-          git push origin --delete "test-branch-rewrite-${{ steps.sha.outputs.short }}" || true
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true
 
   test-multiple-files:
     runs-on: ubuntu-latest
     steps:
-      - name: Get short SHA
-        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-        id: sha
+      - name: Generate branch name
+        run: echo "name=test-branch-multi-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
-          branch: test-branch-multi-${{ steps.sha.outputs.short }}
+          branch: ${{ steps.branch.outputs.name }}
 
       - uses: actions/checkout@v4
         with:
-          ref: test-branch-multi-${{ steps.sha.outputs.short }}
+          ref: ${{ steps.branch.outputs.name }}
 
       - name: Create multiple files
         run: |
@@ -124,23 +124,23 @@ jobs:
       - name: Cleanup test branch
         if: always()
         run: |
-          git push origin --delete "test-branch-multi-${{ steps.sha.outputs.short }}" || true
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true
 
   test-all-changes:
     runs-on: ubuntu-latest
     steps:
-      - name: Get short SHA
-        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-        id: sha
+      - name: Generate branch name
+        run: echo "name=test-branch-all-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
-          branch: test-branch-all-${{ steps.sha.outputs.short }}
+          branch: ${{ steps.branch.outputs.name }}
 
       - uses: actions/checkout@v4
         with:
-          ref: test-branch-all-${{ steps.sha.outputs.short }}
+          ref: ${{ steps.branch.outputs.name }}
 
       - name: Create various changes
         run: |
@@ -158,23 +158,23 @@ jobs:
       - name: Cleanup test branch
         if: always()
         run: |
-          git push origin --delete "test-branch-all-${{ steps.sha.outputs.short }}" || true
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true
 
   test-auto-branch:
     runs-on: ubuntu-latest
     steps:
-      - name: Get short SHA
-        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-        id: sha
+      - name: Generate branch name
+        run: echo "name=test-branch-auto-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
-          branch: test-branch-auto-${{ steps.sha.outputs.short }}
+          branch: ${{ steps.branch.outputs.name }}
 
       - uses: actions/checkout@v4
         with:
-          ref: test-branch-auto-${{ steps.sha.outputs.short }}
+          ref: ${{ steps.branch.outputs.name }}
 
       - name: Create test content
         run: |
@@ -195,23 +195,23 @@ jobs:
       - name: Cleanup test branch
         if: always()
         run: |
-          git push origin --delete "test-branch-auto-${{ steps.sha.outputs.short }}" || true
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true
 
   test-sequential:
     runs-on: ubuntu-latest
     steps:
-      - name: Get short SHA
-        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-        id: sha
+      - name: Generate branch name
+        run: echo "name=test-branch-sequential-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
-          branch: test-branch-sequential-${{ steps.sha.outputs.short }}
+          branch: ${{ steps.branch.outputs.name }}
 
       - uses: actions/checkout@v4
         with:
-          ref: test-branch-sequential-${{ steps.sha.outputs.short }}
+          ref: ${{ steps.branch.outputs.name }}
 
       - name: Initial commit
         run: |
@@ -258,4 +258,4 @@ jobs:
       - name: Cleanup test branch
         if: always()
         run: |
-          git push origin --delete "test-branch-sequential-${{ steps.sha.outputs.short }}" || true
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true
