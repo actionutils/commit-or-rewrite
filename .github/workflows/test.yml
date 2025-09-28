@@ -13,21 +13,18 @@ jobs:
   test-basic:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Get short SHA
+        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
         id: sha
-        run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-basic-${{ steps.sha.outputs.short }}
 
-      - name: Checkout test branch
-        run: git checkout test-branch-basic-${{ steps.sha.outputs.short }}
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-basic-${{ steps.sha.outputs.short }}
 
       - name: Create test file
         run: |
@@ -48,21 +45,18 @@ jobs:
   test-rewrite:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Get short SHA
+        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
         id: sha
-        run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-rewrite-${{ steps.sha.outputs.short }}
 
-      - name: Checkout test branch
-        run: git checkout test-branch-rewrite-${{ steps.sha.outputs.short }}
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-rewrite-${{ steps.sha.outputs.short }}
 
       - name: Create first test file
         run: |
@@ -94,21 +88,18 @@ jobs:
   test-multiple-files:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Get short SHA
+        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
         id: sha
-        run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-multi-${{ steps.sha.outputs.short }}
 
-      - name: Checkout test branch
-        run: git checkout test-branch-multi-${{ steps.sha.outputs.short }}
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-multi-${{ steps.sha.outputs.short }}
 
       - name: Create multiple files
         run: |
@@ -138,21 +129,18 @@ jobs:
   test-all-changes:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Get short SHA
+        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
         id: sha
-        run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-all-${{ steps.sha.outputs.short }}
 
-      - name: Checkout test branch
-        run: git checkout test-branch-all-${{ steps.sha.outputs.short }}
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-all-${{ steps.sha.outputs.short }}
 
       - name: Create various changes
         run: |
@@ -175,21 +163,18 @@ jobs:
   test-auto-branch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Get short SHA
+        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
         id: sha
-        run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-auto-${{ steps.sha.outputs.short }}
 
-      - name: Checkout test branch
-        run: git checkout test-branch-auto-${{ steps.sha.outputs.short }}
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-auto-${{ steps.sha.outputs.short }}
 
       - name: Create test content
         run: |
@@ -215,21 +200,18 @@ jobs:
   test-sequential:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Get short SHA
+        run: echo "short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
         id: sha
-        run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-sequential-${{ steps.sha.outputs.short }}
 
-      - name: Checkout test branch
-        run: git checkout test-branch-sequential-${{ steps.sha.outputs.short }}
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-sequential-${{ steps.sha.outputs.short }}
 
       - name: Initial commit
         run: |
