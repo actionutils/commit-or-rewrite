@@ -38,7 +38,7 @@ No GPG key configuration required - commits appear as "Verified" automatically!
 
 ```yaml
 - name: Update generated files
-  uses: actionutils/commit-or-amend@v1
+  uses: actionutils/commit-or-rewrite@v1
   with:
     commit_message: 'chore: update generated files'
     id: 'generated-files-update'
@@ -51,7 +51,7 @@ Running this multiple times will keep amending the same commit as long as it's t
 
 ```yaml
 - name: Update changelog
-  uses: actionutils/commit-or-amend@v1
+  uses: actionutils/commit-or-rewrite@v1
   with:
     commit_message: 'docs: update changelog'
     id: 'changelog-auto-update'
@@ -64,7 +64,7 @@ Running this multiple times will keep amending the same commit as long as it's t
 
 ```yaml
 - name: Update on specific branch
-  uses: actionutils/commit-or-amend@v1
+  uses: actionutils/commit-or-rewrite@v1
   with:
     commit_message: 'chore: automated update'
     id: 'auto-update'
@@ -107,7 +107,7 @@ jobs:
           npm install
 
       - name: Commit updates
-        uses: actionutils/commit-or-amend@v1
+        uses: actionutils/commit-or-rewrite@v1
         with:
           commit_message: 'chore: weekly dependency update'
           id: 'npm-deps-weekly'
@@ -139,7 +139,7 @@ jobs:
         run: npm run generate-docs
 
       - name: Update docs
-        uses: actionutils/commit-or-amend@v1
+        uses: actionutils/commit-or-rewrite@v1
         with:
           commit_message: 'docs: auto-generated API documentation'
           id: 'api-docs-auto'
@@ -153,7 +153,7 @@ jobs:
   run: npm run build
 
 - name: Commit built files
-  uses: actionutils/commit-or-amend@v1
+  uses: actionutils/commit-or-rewrite@v1
   with:
     commit_message: 'build: update dist files'
     id: 'build-dist'
@@ -222,4 +222,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Support
 
-For issues and feature requests, please use the [GitHub Issues](https://github.com/actionutils/commit-or-amend/issues) page.
+For issues and feature requests, please use the [GitHub Issues](https://github.com/actionutils/commit-or-rewrite/issues) page.
