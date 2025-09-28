@@ -78,6 +78,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         BRANCH: ${{ inputs.branch }}
         PARENT_SHA: ${{ steps.check-trailer.outputs.parent_sha }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
         echo "Resetting branch to parent commit: $PARENT_SHA"
 
@@ -85,7 +86,7 @@ runs:
         curl -X PATCH \
           -H "Authorization: token $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \
-          "https://api.github.com/repos/${{ github.repository }}/git/refs/heads/$BRANCH" \
+          "https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs/heads/$BRANCH" \
           -d "{\"sha\":\"$PARENT_SHA\",\"force\":true}"
 
     - name: Create commit with trailer
@@ -97,6 +98,8 @@ runs:
         FILES_LIST: ${{ steps.check-changes.outputs.files_list }}
         COMMIT_MESSAGE: ${{ inputs.commit_message }}
         TRAILER_ID: ${{ inputs.trailer_id }}
+        ACTION_PATH: ${{ github.action_path }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
         # Create commit message with trailer
         FULL_MESSAGE="${COMMIT_MESSAGE}
@@ -104,11 +107,11 @@ runs:
         X-Commit-Rewrite-ID: ${TRAILER_ID}"
 
         # Get the script path relative to the action directory
-        SCRIPT_PATH="${{ github.action_path }}/run-ghcp.sh"
+        SCRIPT_PATH="${ACTION_PATH}/run-ghcp.sh"
 
         # Commit using ghcp
         "$SCRIPT_PATH" -- commit \
-          -r "${{ github.repository }}" \
+          -r "$GITHUB_REPOSITORY" \
           -b "$BRANCH" \
           -m "$FULL_MESSAGE" \
           $FILES_LIST
