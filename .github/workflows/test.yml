@@ -13,54 +13,57 @@ jobs:
   test-basic:
     runs-on: ubuntu-latest
     steps:
-      # First checkout the action code from the PR/push branch
       - uses: actions/checkout@v4
         with:
-          path: .action
+          fetch-depth: 2
 
-      - name: Create test branch
-        uses: Songmu/action-create-branch@v0
-        with:
-          branch: test-branch-basic
-
-      # Then checkout the test branch to current directory
-      - uses: actions/checkout@v4
-        with:
-          ref: test-branch-basic
+      - name: Create unique test branch
+        id: create-branch
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BRANCH_NAME="test-branch-basic-${SHORT_SHA}"
+          echo "branch=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          git checkout -b "${BRANCH_NAME}"
+          git push origin "${BRANCH_NAME}"
 
       - name: Create test file
         run: |
           echo "Test content $(date)" > test-file.txt
 
       - name: Test first commit (should create new)
-        uses: ./.action
+        uses: ./
         with:
           commit_message: 'test: automated test commit'
           id: 'test-basic'
           files: test-file.txt
+
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.create-branch.outputs.branch }}" || true
 
   test-rewrite:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          path: .action
+          fetch-depth: 2
 
-      - name: Create test branch
-        uses: Songmu/action-create-branch@v0
-        with:
-          branch: test-branch-rewrite
-
-      - uses: actions/checkout@v4
-        with:
-          ref: test-branch-rewrite
+      - name: Create unique test branch
+        id: create-branch
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BRANCH_NAME="test-branch-rewrite-${SHORT_SHA}"
+          echo "branch=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          git checkout -b "${BRANCH_NAME}"
+          git push origin "${BRANCH_NAME}"
 
       - name: Create first test file
         run: |
           echo "Initial content" > rewrite-test.txt
 
       - name: First commit with ID
-        uses: ./.action
+        uses: ./
         with:
           commit_message: 'test: rewrite test - initial'
           id: 'rewrite-test'
@@ -71,27 +74,32 @@ jobs:
           echo "Updated content $(date)" > rewrite-test.txt
 
       - name: Second commit with same ID (should rewrite)
-        uses: ./.action
+        uses: ./
         with:
           commit_message: 'test: rewrite test - updated'
           id: 'rewrite-test'
           files: rewrite-test.txt
+
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.create-branch.outputs.branch }}" || true
 
   test-multiple-files:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          path: .action
+          fetch-depth: 2
 
-      - name: Create test branch
-        uses: Songmu/action-create-branch@v0
-        with:
-          branch: test-branch-multi
-
-      - uses: actions/checkout@v4
-        with:
-          ref: test-branch-multi
+      - name: Create unique test branch
+        id: create-branch
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BRANCH_NAME="test-branch-multi-${SHORT_SHA}"
+          echo "branch=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          git checkout -b "${BRANCH_NAME}"
+          git push origin "${BRANCH_NAME}"
 
       - name: Create multiple files
         run: |
@@ -101,7 +109,7 @@ jobs:
           echo "File 3" > test-dir/file3.txt
 
       - name: Commit multiple files
-        uses: ./.action
+        uses: ./
         with:
           commit_message: |
             test: multiple files commit
@@ -113,21 +121,26 @@ jobs:
             test-dir/file2.txt
             test-dir/file3.txt
 
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.create-branch.outputs.branch }}" || true
+
   test-all-changes:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          path: .action
+          fetch-depth: 2
 
-      - name: Create test branch
-        uses: Songmu/action-create-branch@v0
-        with:
-          branch: test-branch-all
-
-      - uses: actions/checkout@v4
-        with:
-          ref: test-branch-all
+      - name: Create unique test branch
+        id: create-branch
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BRANCH_NAME="test-branch-all-${SHORT_SHA}"
+          echo "branch=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          git checkout -b "${BRANCH_NAME}"
+          git push origin "${BRANCH_NAME}"
 
       - name: Create various changes
         run: |
@@ -137,33 +150,38 @@ jobs:
           echo "Another file" > another.txt
 
       - name: Commit all changes (no files specified)
-        uses: ./.action
+        uses: ./
         with:
           commit_message: 'test: commit all changes'
           id: 'all-changes-test'
+
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.create-branch.outputs.branch }}" || true
 
   test-auto-branch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          path: .action
+          fetch-depth: 2
 
-      - name: Create test branch
-        uses: Songmu/action-create-branch@v0
-        with:
-          branch: test-branch-auto
-
-      - uses: actions/checkout@v4
-        with:
-          ref: test-branch-auto
+      - name: Create unique test branch
+        id: create-branch
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BRANCH_NAME="test-branch-auto-${SHORT_SHA}"
+          echo "branch=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          git checkout -b "${BRANCH_NAME}"
+          git push origin "${BRANCH_NAME}"
 
       - name: Create test content
         run: |
           echo "Branch detection test" > branch-test.txt
 
       - name: Commit without specifying branch
-        uses: ./.action
+        uses: ./
         with:
           commit_message: 'test: auto branch detection'
           id: 'branch-test'
@@ -174,28 +192,33 @@ jobs:
           git log -1 --oneline
           git log -1 --format="%B" | grep -q "X-Commit-Rewrite-ID: branch-test" || (echo "Trailer not found!" && exit 1)
 
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.create-branch.outputs.branch }}" || true
+
   test-sequential:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          path: .action
+          fetch-depth: 2
 
-      - name: Create test branch
-        uses: Songmu/action-create-branch@v0
-        with:
-          branch: test-branch-sequential
-
-      - uses: actions/checkout@v4
-        with:
-          ref: test-branch-sequential
+      - name: Create unique test branch
+        id: create-branch
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BRANCH_NAME="test-branch-sequential-${SHORT_SHA}"
+          echo "branch=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          git checkout -b "${BRANCH_NAME}"
+          git push origin "${BRANCH_NAME}"
 
       - name: Initial commit
         run: |
           echo "Version 1" > sequential.txt
 
       - name: Commit v1
-        uses: ./.action
+        uses: ./
         with:
           commit_message: 'test: sequential v1'
           id: 'sequential-test'
@@ -206,7 +229,7 @@ jobs:
           echo "Version 2" > sequential.txt
 
       - name: Rewrite to v2
-        uses: ./.action
+        uses: ./
         with:
           commit_message: 'test: sequential v2'
           id: 'sequential-test'
@@ -217,7 +240,7 @@ jobs:
           echo "Version 3" > sequential.txt
 
       - name: Rewrite to v3
-        uses: ./.action
+        uses: ./
         with:
           commit_message: 'test: sequential v3'
           id: 'sequential-test'
@@ -231,3 +254,8 @@ jobs:
             echo "Expected 1 commit, found $COMMIT_COUNT"
             exit 1
           fi
+
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.create-branch.outputs.branch }}" || true
