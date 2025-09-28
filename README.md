@@ -175,7 +175,6 @@ jobs:
 ## Requirements
 
 - The workflow must have write permissions to the repository
-- The branch must exist and be accessible
 - When using custom tokens, ensure they have `repo` scope
 
 ## License
