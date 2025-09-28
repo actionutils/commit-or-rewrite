@@ -27,6 +27,7 @@ jobs:
         with:
           commit_message: 'test: automated test commit'
           id: 'test-basic'
+          branch: 'test-branch-basic'
           files: test-file.txt
 
   test-rewrite:
@@ -46,6 +47,7 @@ jobs:
         with:
           commit_message: 'test: rewrite test - initial'
           id: 'rewrite-test'
+          branch: 'test-branch-rewrite'
           files: rewrite-test.txt
 
       - name: Modify the file
@@ -57,6 +59,7 @@ jobs:
         with:
           commit_message: 'test: rewrite test - updated'
           id: 'rewrite-test'
+          branch: 'test-branch-rewrite'
           files: rewrite-test.txt
 
   test-multiple-files:
@@ -82,6 +85,7 @@ jobs:
 
             Testing with multiple files in a directory
           id: 'multi-file-test'
+          branch: 'test-branch-multi'
           files: |
             test-dir/file1.txt
             test-dir/file2.txt
@@ -107,6 +111,7 @@ jobs:
         with:
           commit_message: 'test: commit all changes'
           id: 'all-changes-test'
+          branch: 'test-branch-all'
 
   test-auto-branch-detection:
     name: Test Auto Branch Detection
@@ -125,6 +130,7 @@ jobs:
         with:
           commit_message: 'test: auto branch detection'
           id: 'branch-test'
+          branch: 'test-branch-auto'
           files: branch-test.txt
 
       - name: Verify commit was created
@@ -149,6 +155,7 @@ jobs:
         with:
           commit_message: 'test: sequential v1'
           id: 'sequential-test'
+          branch: 'test-branch-sequential'
           files: sequential.txt
 
       - name: Update to v2
@@ -160,6 +167,7 @@ jobs:
         with:
           commit_message: 'test: sequential v2'
           id: 'sequential-test'
+          branch: 'test-branch-sequential'
           files: sequential.txt
 
       - name: Update to v3
@@ -171,6 +179,7 @@ jobs:
         with:
           commit_message: 'test: sequential v3'
           id: 'sequential-test'
+          branch: 'test-branch-sequential'
           files: sequential.txt
 
       - name: Verify only one commit exists

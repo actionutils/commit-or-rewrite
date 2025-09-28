@@ -114,7 +114,7 @@ runs:
         BRANCH: ${{ steps.detect-branch.outputs.branch }}
         FILES_LIST: ${{ steps.check-changes.outputs.files_list }}
         COMMIT_MESSAGE: ${{ inputs.commit_message }}
-        TRAILER_ID: ${{ inputs.trailer_id }}
+        TRAILER_ID: ${{ inputs.id }}
         ACTION_PATH: ${{ github.action_path }}
         GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
