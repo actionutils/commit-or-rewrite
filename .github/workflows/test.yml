@@ -1,4 +1,4 @@
-name: Test Commit or Rewrite Action
+name: Test
 
 on:
   pull_request:
@@ -11,7 +11,6 @@ permissions:
 
 jobs:
   test-basic:
-    name: Test Basic Commit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +37,6 @@ jobs:
           files: test-file.txt
 
   test-rewrite:
-    name: Test Rewrite Functionality
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -76,7 +74,6 @@ jobs:
           files: rewrite-test.txt
 
   test-multiple-files:
-    name: Test Multiple Files
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -112,7 +109,6 @@ jobs:
             test-dir/file3.txt
 
   test-all-changes:
-    name: Test Commit All Changes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -140,8 +136,7 @@ jobs:
           commit_message: 'test: commit all changes'
           id: 'all-changes-test'
 
-  test-auto-branch-detection:
-    name: Test Auto Branch Detection
+  test-auto-branch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -172,8 +167,7 @@ jobs:
           git log -1 --oneline
           git log -1 --format="%B" | grep -q "X-Commit-Rewrite-ID: branch-test" || (echo "Trailer not found!" && exit 1)
 
-  test-sequential-rewrites:
-    name: Test Sequential Rewrites
+  test-sequential:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
