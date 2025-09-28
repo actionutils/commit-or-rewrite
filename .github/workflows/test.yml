@@ -13,17 +13,15 @@ jobs:
   test-basic:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-basic
 
-      - name: Checkout test branch
-        run: git checkout test-branch-basic
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-basic
+          fetch-depth: 2
 
       - name: Create test file
         run: |
@@ -39,17 +37,15 @@ jobs:
   test-rewrite:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-rewrite
 
-      - name: Checkout test branch
-        run: git checkout test-branch-rewrite
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-rewrite
+          fetch-depth: 2
 
       - name: Create first test file
         run: |
@@ -76,17 +72,15 @@ jobs:
   test-multiple-files:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-multi
 
-      - name: Checkout test branch
-        run: git checkout test-branch-multi
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-multi
+          fetch-depth: 2
 
       - name: Create multiple files
         run: |
@@ -111,17 +105,15 @@ jobs:
   test-all-changes:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-all
 
-      - name: Checkout test branch
-        run: git checkout test-branch-all
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-all
+          fetch-depth: 2
 
       - name: Create various changes
         run: |
@@ -139,17 +131,15 @@ jobs:
   test-auto-branch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-auto
 
-      - name: Checkout test branch
-        run: git checkout test-branch-auto
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-auto
+          fetch-depth: 2
 
       - name: Create test content
         run: |
@@ -170,17 +160,15 @@ jobs:
   test-sequential:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
       - name: Create test branch
         uses: Songmu/action-create-branch@v0
         with:
           branch: test-branch-sequential
 
-      - name: Checkout test branch
-        run: git checkout test-branch-sequential
+      - uses: actions/checkout@v4
+        with:
+          ref: test-branch-sequential
+          fetch-depth: 2
 
       - name: Initial commit
         run: |
