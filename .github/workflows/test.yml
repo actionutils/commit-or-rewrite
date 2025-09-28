@@ -23,6 +23,9 @@ jobs:
         with:
           branch: ${{ steps.branch.outputs.name }}
 
+      - name: Wait for branch to be available
+        run: sleep 1
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.branch.outputs.name }}
@@ -60,6 +63,9 @@ jobs:
         uses: Songmu/action-create-branch@v0
         with:
           branch: ${{ steps.branch.outputs.name }}
+
+      - name: Wait for branch to be available
+        run: sleep 1
 
       - uses: actions/checkout@v4
         with:
@@ -116,6 +122,9 @@ jobs:
         with:
           branch: ${{ steps.branch.outputs.name }}
 
+      - name: Wait for branch to be available
+        run: sleep 1
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.branch.outputs.name }}
@@ -166,6 +175,9 @@ jobs:
         with:
           branch: ${{ steps.branch.outputs.name }}
 
+      - name: Wait for branch to be available
+        run: sleep 1
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.branch.outputs.name }}
@@ -209,6 +221,9 @@ jobs:
         with:
           branch: ${{ steps.branch.outputs.name }}
 
+      - name: Wait for branch to be available
+        run: sleep 1
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.branch.outputs.name }}
@@ -246,6 +261,9 @@ jobs:
         uses: Songmu/action-create-branch@v0
         with:
           branch: ${{ steps.branch.outputs.name }}
+
+      - name: Wait for branch to be available
+        run: sleep 1
 
       - uses: actions/checkout@v4
         with:
