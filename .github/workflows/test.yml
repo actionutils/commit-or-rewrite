@@ -3,7 +3,7 @@ name: Test
 on:
   pull_request:
   push:
-    branches: [test-action-workflow]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   test-basic:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Generate branch name
@@ -43,6 +44,7 @@ jobs:
           git push origin --delete "${{ steps.branch.outputs.name }}" || true
 
   test-rewrite:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Generate branch name
@@ -86,6 +88,7 @@ jobs:
           git push origin --delete "${{ steps.branch.outputs.name }}" || true
 
   test-multiple-files:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Generate branch name
@@ -127,6 +130,7 @@ jobs:
           git push origin --delete "${{ steps.branch.outputs.name }}" || true
 
   test-all-changes:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Generate branch name
@@ -161,6 +165,7 @@ jobs:
           git push origin --delete "${{ steps.branch.outputs.name }}" || true
 
   test-auto-branch:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Generate branch name
@@ -198,6 +203,7 @@ jobs:
           git push origin --delete "${{ steps.branch.outputs.name }}" || true
 
   test-sequential:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Generate branch name
