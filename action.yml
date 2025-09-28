@@ -1,11 +1,11 @@
-name: 'Commit or Pseudo-Amend'
-description: 'Smart GitHub Action that creates or pseudo-amends commits. Rewrites HEAD commit if it has matching ID, otherwise creates new commit. All commits are signed via GitHub API.'
+name: 'Commit or Rewrite'
+description: 'Smart GitHub Action that creates or amends commits. Rewrites HEAD commit if it has matching ID, otherwise creates new commit. All commits are signed via GitHub API.'
 inputs:
   commit_message:
     description: 'Commit message (can be multiline)'
     required: true
   id:
-    description: 'Unique identifier for pseudo-amend (e.g., changelog-update)'
+    description: 'Unique identifier for amending commits (e.g., changelog-update)'
     required: true
   branch:
     description: 'Target branch (auto-detects current branch if not specified)'

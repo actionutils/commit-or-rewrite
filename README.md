@@ -1,29 +1,31 @@
-# Commit or Rewrite (Pseudo-Amend) Action
+# Commit or Rewrite Action
 
-A GitHub Action that intelligently creates or **pseudo-amends** commits using signed GitHub API commits. Perfect for automated commits that should update in-place rather than creating new commits every time.
+A smart GitHub Action that creates new commits or amends existing ones based on commit IDs. Perfect for automated commits that should update in-place rather than creating new commits every time.
 
-## 🎯 Key Feature: Pseudo-Amend
+## 🎯 Key Feature: Smart Amending
 
-This action implements a **pseudo-amend** functionality:
+This action intelligently decides whether to create a new commit or amend an existing one:
 
 - **First run**: Creates a new commit with your specified ID
-- **Subsequent runs with same ID**: If HEAD commit has the same ID, it **rewrites/amends** that commit
+- **Subsequent runs with same ID**: If HEAD commit has the same ID, it amends that commit
 - **Different ID or no matching ID**: Creates a new commit
 
 This prevents commit spam from automated tasks while maintaining a clean git history!
 
-### How Pseudo-Amend Works
+### How It Works
 
-1. Each commit includes a hidden trailer: `X-Commit-Rewrite-ID: <your-id>`
+1. Each commit includes a git trailer: `X-Commit-Rewrite-ID: <your-id>`
 2. When the action runs, it checks if HEAD has this exact trailer
-3. **If HEAD has matching ID** → Rewrites that commit (pseudo-amend)
+3. **If HEAD has matching ID** → Amends that commit
 4. **If HEAD has different/no ID** → Creates a new commit
 
-**Important**: The pseudo-amend ONLY happens when the HEAD commit has the matching ID. If there are other commits on top, a new commit will be created.
+**Important**: The amend ONLY happens when the HEAD commit has the matching ID. If there are other commits on top, a new commit will be created.
 
-## ✨ Signed Commits via GitHub API
+**Technical Note**: This action doesn't use `git commit --amend`. Instead, it uses the GitHub API to rewrite commits, which is why we call it "pseudo-amend" internally. From a user perspective, it works just like amending.
 
-Using the GitHub API for commits provides automatic signing:
+## ✨ Automatic Commit Signing
+
+All commits are created via GitHub API, which provides automatic signing:
 - **`GITHUB_TOKEN`** (default): Signed by GitHub Actions bot
 - **GitHub App tokens**: Signed by your GitHub App
 - **Fine-grained PATs**: Signed by the token owner
@@ -32,15 +34,15 @@ No GPG key configuration required - commits appear as "Verified" automatically!
 
 ## Usage
 
-### Basic Usage (Auto-Amend Pattern)
+### Basic Usage
 
 ```yaml
 - name: Update generated files
-  uses: actionutils/commit-or-rewrite@v1
+  uses: actionutils/commit-or-amend@v1
   with:
     commit_message: 'chore: update generated files'
     id: 'generated-files-update'
-    # Omit branch to auto-detect current branch
+    # Branch is auto-detected if not specified
 ```
 
 Running this multiple times will keep amending the same commit as long as it's the HEAD commit.
@@ -49,7 +51,7 @@ Running this multiple times will keep amending the same commit as long as it's t
 
 ```yaml
 - name: Update changelog
-  uses: actionutils/commit-or-rewrite@v1
+  uses: actionutils/commit-or-amend@v1
   with:
     commit_message: 'docs: update changelog'
     id: 'changelog-auto-update'
@@ -62,7 +64,7 @@ Running this multiple times will keep amending the same commit as long as it's t
 
 ```yaml
 - name: Update on specific branch
-  uses: actionutils/commit-or-rewrite@v1
+  uses: actionutils/commit-or-amend@v1
   with:
     commit_message: 'chore: automated update'
     id: 'auto-update'
@@ -75,14 +77,14 @@ Running this multiple times will keep amending the same commit as long as it's t
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `commit_message` | Commit message (can be multiline) | Yes | - |
-| `id` | Unique identifier for pseudo-amend | Yes | - |
+| `id` | Unique identifier for amending | Yes | - |
 | `branch` | Target branch (auto-detects if not specified) | No | `''` (auto-detect) |
 | `files` | Files to commit (newline-separated). If empty, commits all changes | No | `''` (all changes) |
 | `github_token` | GitHub token for API operations | No | `${{ github.token }}` |
 
 ## Real-World Examples
 
-### Automated Dependency Updates (Weekly)
+### Automated Dependency Updates
 
 ```yaml
 name: Update Dependencies
@@ -97,15 +99,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2  # Need HEAD and its parent for pseudo-amend
+          fetch-depth: 2  # Need HEAD and its parent for amending
 
       - name: Update npm dependencies
         run: |
           npx npm-check-updates -u
           npm install
 
-      - name: Commit updates (pseudo-amends if run again)
-        uses: actionutils/commit-or-rewrite@v1
+      - name: Commit updates
+        uses: actionutils/commit-or-amend@v1
         with:
           commit_message: 'chore: weekly dependency update'
           id: 'npm-deps-weekly'
@@ -114,7 +116,7 @@ jobs:
             package-lock.json
 ```
 
-If you run this workflow multiple times in the same week, it will keep updating the same commit instead of creating multiple "weekly update" commits.
+Running this workflow multiple times in the same week will amend the same commit instead of creating multiple "weekly update" commits.
 
 ### Generated Documentation
 
@@ -136,8 +138,8 @@ jobs:
       - name: Generate API docs
         run: npm run generate-docs
 
-      - name: Update docs (amends if regenerating)
-        uses: actionutils/commit-or-rewrite@v1
+      - name: Update docs
+        uses: actionutils/commit-or-amend@v1
         with:
           commit_message: 'docs: auto-generated API documentation'
           id: 'api-docs-auto'
@@ -151,25 +153,34 @@ jobs:
   run: npm run build
 
 - name: Commit built files
-  uses: actionutils/commit-or-rewrite@v1
+  uses: actionutils/commit-or-amend@v1
   with:
     commit_message: 'build: update dist files'
     id: 'build-dist'
     files: 'dist/'
 ```
 
-## When Does Pseudo-Amend Happen?
+## When Does Amending Happen?
 
-Pseudo-amend **ONLY** occurs when:
+Amending **ONLY** occurs when:
 1. The HEAD commit has the trailer `X-Commit-Rewrite-ID: <your-id>`
 2. You run the action with the same `id` value
 
-Pseudo-amend **DOES NOT** occur when:
+Amending **DOES NOT** occur when:
 - HEAD commit has a different ID
 - HEAD commit has no ID trailer
 - There are other commits after the commit with matching ID
 
 This ensures predictable behavior and prevents accidental rewrites of unrelated commits.
+
+## Implementation Details
+
+Unlike `git commit --amend`, this action uses the GitHub API to create commits. When amending:
+1. It resets the branch to the parent commit using the API
+2. Creates a new commit with updated content
+3. The result looks exactly like an amended commit
+
+This approach allows for signed commits without requiring GPG keys and works seamlessly in GitHub Actions environments.
 
 ## Why Use This Action?
 
@@ -180,11 +191,11 @@ This ensures predictable behavior and prevents accidental rewrites of unrelated 
 - Complex GPG setup for verified commits
 
 ### With This Action
-- ✅ Clean history with pseudo-amend
+- ✅ Clean history with automatic amending
 - ✅ Automatic verified/signed commits
 - ✅ No commit spam from automation
 - ✅ No GPG configuration needed
-- ✅ Predictable rewrite behavior
+- ✅ Predictable amend behavior
 
 ## Requirements
 
@@ -193,6 +204,13 @@ This ensures predictable behavior and prevents accidental rewrites of unrelated 
   - Fine-grained PATs: Need `contents: write` permission
   - GitHub Apps: Need `contents: write` permission
   - Classic PATs: Need `repo` scope
+
+## Future Features
+
+We're considering adding support for:
+- `fixup` commits for later squashing
+- `squash` operations for combining commits
+- Custom trailer keys
 
 ## License
 
@@ -204,4 +222,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Support
 
-For issues and feature requests, please use the [GitHub Issues](https://github.com/actionutils/commit-or-rewrite/issues) page.
+For issues and feature requests, please use the [GitHub Issues](https://github.com/actionutils/commit-or-amend/issues) page.
