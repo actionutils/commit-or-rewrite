@@ -1,5 +1,5 @@
-name: 'Commit or Rewrite'
-description: 'Creates new commits or rewrites existing ones based on git trailer detection'
+name: 'Commit or Rewrite (Signed)'
+description: 'Creates signed/verified commits or rewrites existing ones using GitHub API. Supports GitHub App tokens for verified commits without GPG keys.'
 inputs:
   commit_message:
     description: 'Commit message (can be multiline)'
