@@ -174,8 +174,11 @@ jobs:
 
 ## Requirements
 
-- The workflow must have write permissions to the repository
-- When using custom tokens, ensure they have `repo` scope
+- The workflow must have write permissions to the repository (`contents: write`)
+- When using custom tokens:
+  - Fine-grained PATs: Need `contents: write` permission
+  - GitHub Apps: Need `contents: write` permission
+  - Classic PATs: Need `repo` scope
 
 ## License
 
