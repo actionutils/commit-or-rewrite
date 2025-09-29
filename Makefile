@@ -1,7 +1,7 @@
 # Makefile for setting up binstaller and ghcp
 
 # Variables
-BINSTALLER_VERSION := v0.10.2
+BINSTALLER_VERSION := v0.11.0
 BINSTALLER_URL := https://github.com/binary-install/binstaller/releases/download/$(BINSTALLER_VERSION)
 GHCP_VERSION := v1.15.0
 BIN_DIR := ./bin
