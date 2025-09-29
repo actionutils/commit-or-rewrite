@@ -8,11 +8,9 @@ usage() {
   cat <<EOF
 $this: download and run ${NAME} from ${REPO}
 
-Usage: $this [-d] [tag] -- [binary arguments]
+Usage: $this [-d] -- [binary arguments]
   -d turns on debug logging
-   [tag] is a tag from
-   https://github.com/int128/ghcp/releases
-   If tag is missing, then latest will be used.
+   This script is configured for v1.15.0 only.
 
    This script downloads and runs ghcp directly
    Pass arguments after --:
@@ -401,34 +399,20 @@ parse_args() {
       usage "$0"
       ;;
     *)
-      # First non-flag argument is the tag/version
-      TAG="$1"
-      PARSE_CONSUMED=$((PARSE_CONSUMED+1))
+      # Target version is fixed, stop parsing wrapper args
+      break
       ;;
     esac
     shift
   done
-  TAG="${TAG:-latest}"
+  TAG="v1.15.0"
 }
 tag_to_version() {
-  if [ "$TAG" = "latest" ]; then
-    log_info "checking GitHub for latest tag"
-    REALTAG=$(github_release "${REPO}" "${TAG}") && true
-    test -n "$REALTAG" || {
-      log_crit "Could not determine latest tag for ${REPO}"
-      exit 1
-    }
-  else
-    # Assume TAG is a valid tag/version string
-    REALTAG="$TAG"
-  fi
-  if test -z "$REALTAG"; then
-    log_crit "unable to find '${TAG}' - use 'latest' or see https://github.com/${REPO}/releases for details"
-    exit 1
-  fi
+  # Target version is set at generation time
+  REALTAG="v1.15.0"
   VERSION=${REALTAG#v} # Strip leading 'v'
-  TAG="$REALTAG"       # Use the resolved tag
-  log_info "Resolved version: ${VERSION} (tag: ${TAG})"
+  TAG="$REALTAG"
+  log_info "Running ${NAME} version ${VERSION}"
 }
 
 
