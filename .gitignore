@@ -1,0 +1,5 @@
+# Binaries directory
+bin/
+
+# macOS
+.DS_Store
