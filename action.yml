@@ -54,10 +54,8 @@ runs:
         # Process files list (dedupe, convert to space-separated, trim)
         FILES_LIST=$(echo "$FILES" | sort -u | tr '\n' ' ' | sed 's/[[:space:]]*$//')
 
-        # Store files list for later use (handle multiline output)
-        echo "files_list<<EOF" >> $GITHUB_OUTPUT
-        echo "$FILES_LIST" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+        # Store files list for later use
+        echo "files_list=$FILES_LIST" >> $GITHUB_OUTPUT
 
         # Check if there are any changes
         if [ -z "$FILES_LIST" ]; then
