@@ -24,7 +24,7 @@ jobs:
           branch: ${{ steps.branch.outputs.name }}
 
       - name: Wait for branch to be available
-        run: sleep 1
+        run: sleep 3
 
       - uses: actions/checkout@v4
         with:
@@ -65,7 +65,7 @@ jobs:
           branch: ${{ steps.branch.outputs.name }}
 
       - name: Wait for branch to be available
-        run: sleep 1
+        run: sleep 3
 
       - uses: actions/checkout@v4
         with:
@@ -123,7 +123,7 @@ jobs:
           branch: ${{ steps.branch.outputs.name }}
 
       - name: Wait for branch to be available
-        run: sleep 1
+        run: sleep 3
 
       - uses: actions/checkout@v4
         with:
@@ -176,7 +176,7 @@ jobs:
           branch: ${{ steps.branch.outputs.name }}
 
       - name: Wait for branch to be available
-        run: sleep 1
+        run: sleep 3
 
       - uses: actions/checkout@v4
         with:
@@ -222,7 +222,7 @@ jobs:
           branch: ${{ steps.branch.outputs.name }}
 
       - name: Wait for branch to be available
-        run: sleep 1
+        run: sleep 3
 
       - uses: actions/checkout@v4
         with:
@@ -263,7 +263,7 @@ jobs:
           branch: ${{ steps.branch.outputs.name }}
 
       - name: Wait for branch to be available
-        run: sleep 1
+        run: sleep 3
 
       - uses: actions/checkout@v4
         with:
