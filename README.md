@@ -180,10 +180,7 @@ When using custom tokens (GitHub Apps or Fine-grained PATs), ensure they have `c
 
 ## Future Features
 
-We're considering adding support for:
-- `fixup` commits for later squashing
-- `squash` operations for combining commits
-- Custom trailer keys
+We're considering adding support for `fixup` / `squash` commits for later squashing.
 
 ## License
 
