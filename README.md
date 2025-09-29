@@ -1,72 +1,81 @@
-# Commit or Rewrite (Signed) Action
+# Commit or Rewrite Action
 
-A GitHub Action that creates signed/verified commits or intelligently rewrites existing ones based on git trailer detection. This action uses the GitHub API to create commits, which means commits will be properly signed and verified when using GitHub's default `GITHUB_TOKEN` or GitHub App tokens - no GPG key setup required!
+A smart GitHub Action that creates new commits or rewrites existing ones based on commit IDs. Perfect for automated commits that should update in-place rather than creating new commits every time.
 
-## Features
+## 🎯 Key Feature: Smart Rewriting
 
-- **Signed/Verified Commits**: When using `GITHUB_TOKEN` or GitHub App tokens, commits are automatically signed and show as "Verified" on GitHub
-- **Smart Commit Rewriting**: Automatically detects and rewrites previous commits with the same trailer ID
-- **Git Trailer Support**: Uses git trailers (X-Commit-Rewrite-ID) to identify rewritable commits
-- **Flexible File Selection**: Commit all changes or specific files
-- **No GPG Setup Required**: Leverages GitHub API for commit signing
+This action intelligently decides whether to create a new commit or rewrite an existing one:
 
-## How It Works
+- **First run**: Creates a new commit with your specified ID
+- **Subsequent runs with same ID**: If HEAD commit has the same ID, it rewrites that commit
+- **Different ID or no matching ID**: Creates a new commit
 
-1. **Change Detection**: Checks for changes in the repository
-2. **Trailer Check**: Looks for a matching `X-Commit-Rewrite-ID` trailer in the HEAD commit
-3. **Smart Rewrite**: If a matching trailer is found, resets to the parent commit
-4. **API Commit**: Creates a new commit using GitHub API (which provides automatic signing)
-5. **Local Sync**: Synchronizes local git state with the remote
+This prevents commit spam from automated tasks while maintaining a clean git history!
 
-## Signed Commits with GitHub API
+### How It Works
 
-This action uses the GitHub API to create commits instead of traditional git commands. When using:
-- **`GITHUB_TOKEN`** (default): Commits are signed by GitHub Actions bot
-- **GitHub App tokens**: Commits are signed by your GitHub App
-- **Personal Access Tokens**: Commits are signed by the token owner
+1. Each commit includes a git trailer: `X-Commit-Rewrite-ID: <your-id>`
+2. When the action runs, it checks if HEAD has this exact trailer
+3. **If HEAD has matching ID** → Rewrites that commit (amends)
+4. **If HEAD has different/no ID** → Creates a new commit
 
-All these methods result in verified commits without requiring GPG key configuration!
+**Important**: The rewrite ONLY happens when the HEAD commit has the matching ID. If there are other commits on top, a new commit will be created.
+
+### Technical Implementation
+
+Unlike `git commit --amend`, this action uses the GitHub API to create commits. When rewriting:
+1. It resets the branch to the parent commit using the API
+2. Creates a new commit with updated content
+3. The result looks exactly like an amended commit
+
+This approach allows for signed commits without requiring GPG keys and works seamlessly in GitHub Actions environments.
+
+## ✨ Automatic Commit Signing
+
+All commits are created via GitHub API, which provides automatic signing:
+- **`GITHUB_TOKEN`** (default): Signed by GitHub Actions bot
+- **GitHub App tokens**: Signed by your GitHub App
+- **Fine-grained PATs**: Signed by the token owner
+
+No GPG key configuration required - commits appear as "Verified" automatically!
 
 ## Usage
 
 ### Basic Usage
 
 ```yaml
-- name: Commit changes
+- name: Update generated files
   uses: actionutils/commit-or-rewrite@v1
   with:
-    commit_message: 'Update dependencies'
-    trailer_id: 'deps-update'
-    # branch is optional - auto-detects current branch if not specified
+    commit_message: 'chore: update generated files'
+    id: 'generated-files-update'
+    # Branch is auto-detected if not specified
 ```
 
-### Commit Specific Files
+Running this multiple times will keep rewriting the same commit as long as it's the HEAD commit.
+
+### Specific Files
 
 ```yaml
-- name: Commit specific files
+- name: Update changelog
   uses: actionutils/commit-or-rewrite@v1
   with:
-    commit_message: |
-      Update documentation
-
-      - Added API examples
-      - Fixed typos
-    trailer_id: 'docs-update'
-    branch: 'main'
+    commit_message: 'docs: update changelog'
+    id: 'changelog-auto-update'
     files: |
-      README.md
-      docs/api.md
+      CHANGELOG.md
+      docs/releases.md
 ```
 
-### With Custom GitHub Token
+### With Custom Branch
 
 ```yaml
-- name: Commit with GitHub App token
+- name: Update on specific branch
   uses: actionutils/commit-or-rewrite@v1
   with:
-    commit_message: 'Automated update'
-    trailer_id: 'auto-update'
-    branch: 'main'
+    commit_message: 'chore: automated update'
+    id: 'auto-update'
+    branch: 'automation-branch'
     github_token: ${{ secrets.GITHUB_APP_TOKEN }}
 ```
 
@@ -75,32 +84,14 @@ All these methods result in verified commits without requiring GPG key configura
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `commit_message` | Commit message (can be multiline) | Yes | - |
-| `trailer_id` | Unique identifier for the trailer (e.g., `changelog-update`) | Yes | - |
-| `branch` | Target branch (auto-detects current branch if not specified) | No | `''` (auto-detect) |
+| `id` | Unique identifier for rewriting | Yes | - |
+| `branch` | Target branch (auto-detects if not specified) | No | `''` (auto-detect) |
 | `files` | Files to commit (newline-separated). If empty, commits all changes | No | `''` (all changes) |
 | `github_token` | GitHub token for API operations | No | `${{ github.token }}` |
 
-## Trailer System
+## Real-World Examples
 
-This action uses git trailers to identify commits that can be rewritten. Each commit created includes a trailer:
-
-```
-X-Commit-Rewrite-ID: <your-trailer-id>
-```
-
-When the action runs again with the same `trailer_id`:
-1. If the HEAD commit has this trailer → Rewrites that commit
-2. If the HEAD commit doesn't have this trailer → Creates a new commit
-
-This is perfect for:
-- Automated dependency updates
-- Generated documentation
-- Build artifacts
-- Any repeated automated commits
-
-## Example Workflow
-
-### Auto-update Dependencies
+### Automated Dependency Updates
 
 ```yaml
 name: Update Dependencies
@@ -114,6 +105,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need HEAD and its parent for rewriting
 
       - name: Update npm dependencies
         run: |
@@ -123,13 +116,14 @@ jobs:
       - name: Commit updates
         uses: actionutils/commit-or-rewrite@v1
         with:
-          commit_message: 'chore: update npm dependencies'
-          trailer_id: 'npm-deps-weekly'
-          branch: 'main'
+          commit_message: 'chore: weekly dependency update'
+          id: 'npm-deps-weekly'
           files: |
             package.json
             package-lock.json
 ```
+
+Running this workflow multiple times in the same week will rewrite the same commit instead of creating multiple "weekly update" commits.
 
 ### Generated Documentation
 
@@ -145,47 +139,52 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Generate API docs
         run: npm run generate-docs
 
-      - name: Commit documentation
+      - name: Update docs
         uses: actionutils/commit-or-rewrite@v1
         with:
-          commit_message: 'docs: update API documentation'
-          trailer_id: 'api-docs-auto'
-          branch: 'main'
+          commit_message: 'docs: auto-generated API documentation'
+          id: 'api-docs-auto'
           files: 'docs/api/'
 ```
 
-## Why Use This Action?
+### Build Artifacts
 
-### Traditional Git Commits in Actions
-- Require GPG key setup for signed commits
-- Show as "unverified" without proper configuration
-- Complex setup for bot commits
+```yaml
+- name: Build and commit dist
+  run: npm run build
 
-### This Action
-- ✅ Automatic commit signing via GitHub API
-- ✅ Shows as "Verified" on GitHub
-- ✅ Smart rewriting prevents commit spam
-- ✅ No GPG configuration needed
-- ✅ Works with default `GITHUB_TOKEN`
+- name: Commit built files
+  uses: actionutils/commit-or-rewrite@v1
+  with:
+    commit_message: 'build: update dist files'
+    id: 'build-dist'
+    files: 'dist/'
+```
 
-## Requirements
+## Permissions
 
-- The workflow must have write permissions to the repository
-- The branch must exist and be accessible
-- When using custom tokens, ensure they have `repo` scope
+This action requires `contents: write` permission to create and modify commits.
+
+```yaml
+permissions:
+  contents: write
+```
+
+When using custom tokens (GitHub Apps or Fine-grained PATs), ensure they have `contents: write` permission.
+
+## Future Features
+
+We're considering adding support for:
+- `fixup` commits for later squashing
+- `squash` operations for combining commits
+- Custom trailer keys
 
 ## License
 
 MIT
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Support
-
-For issues and feature requests, please use the [GitHub Issues](https://github.com/actionutils/commit-or-rewrite/issues) page.

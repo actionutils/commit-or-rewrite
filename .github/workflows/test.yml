@@ -1,0 +1,317 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test-basic:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate branch name
+        run: echo "name=test-branch-basic-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
+
+      - name: Create test branch
+        uses: Songmu/action-create-branch@v0
+        with:
+          branch: ${{ steps.branch.outputs.name }}
+
+      - name: Wait for branch to be available
+        run: sleep 3
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.branch.outputs.name }}
+
+      - name: Create test file
+        run: |
+          echo "Test content $(date)" > test-file.txt
+
+      - name: Test first commit (should create new)
+        uses: ./
+        with:
+          commit_message: 'test: automated test commit'
+          id: 'test-basic'
+          files: test-file.txt
+
+      - name: Verify commit was created
+        run: |
+          git log -1 --oneline
+          git log -1 --format="%B" | grep -q "X-Commit-Rewrite-ID: test-basic" || (echo "Trailer not found!" && exit 1)
+
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true
+
+  test-rewrite:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate branch name
+        run: echo "name=test-branch-rewrite-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
+
+      - name: Create test branch
+        uses: Songmu/action-create-branch@v0
+        with:
+          branch: ${{ steps.branch.outputs.name }}
+
+      - name: Wait for branch to be available
+        run: sleep 3
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.branch.outputs.name }}
+
+      - name: Create first test file
+        run: |
+          echo "Initial content" > rewrite-test.txt
+
+      - name: First commit with ID
+        uses: ./
+        with:
+          commit_message: 'test: rewrite test - initial'
+          id: 'rewrite-test'
+          files: rewrite-test.txt
+
+      - name: Modify the file
+        run: |
+          echo "Updated content $(date)" > rewrite-test.txt
+
+      - name: Second commit with same ID (should rewrite)
+        uses: ./
+        with:
+          commit_message: 'test: rewrite test - updated'
+          id: 'rewrite-test'
+          files: rewrite-test.txt
+
+      - name: Verify rewrite occurred
+        run: |
+          git log -1 --oneline
+          git log -1 --format="%B" | grep -q "X-Commit-Rewrite-ID: rewrite-test" || (echo "Trailer not found!" && exit 1)
+          COMMIT_COUNT=$(git log --oneline --grep="rewrite-test" | wc -l)
+          echo "Found $COMMIT_COUNT commits with ID 'rewrite-test'"
+          if [ "$COMMIT_COUNT" -ne 1 ]; then
+            echo "Expected 1 commit, found $COMMIT_COUNT"
+            exit 1
+          fi
+
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true
+
+  test-multiple-files:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate branch name
+        run: echo "name=test-branch-multi-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
+
+      - name: Create test branch
+        uses: Songmu/action-create-branch@v0
+        with:
+          branch: ${{ steps.branch.outputs.name }}
+
+      - name: Wait for branch to be available
+        run: sleep 3
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.branch.outputs.name }}
+
+      - name: Create multiple files
+        run: |
+          mkdir -p test-dir
+          echo "File 1" > test-dir/file1.txt
+          echo "File 2" > test-dir/file2.txt
+          echo "File 3" > test-dir/file3.txt
+
+      - name: Commit multiple files
+        uses: ./
+        with:
+          commit_message: |
+            test: multiple files commit
+
+            Testing with multiple files in a directory
+          id: 'multi-file-test'
+          files: |
+            test-dir/file1.txt
+            test-dir/file2.txt
+            test-dir/file3.txt
+
+      - name: Verify commit was created with all files
+        run: |
+          git log -1 --oneline
+          git log -1 --format="%B" | grep -q "X-Commit-Rewrite-ID: multi-file-test" || (echo "Trailer not found!" && exit 1)
+          git diff HEAD~1 --name-only | grep -q "test-dir/file1.txt" || (echo "file1.txt not in commit!" && exit 1)
+          git diff HEAD~1 --name-only | grep -q "test-dir/file2.txt" || (echo "file2.txt not in commit!" && exit 1)
+          git diff HEAD~1 --name-only | grep -q "test-dir/file3.txt" || (echo "file3.txt not in commit!" && exit 1)
+
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true
+
+  test-all-changes:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate branch name
+        run: echo "name=test-branch-all-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
+
+      - name: Create test branch
+        uses: Songmu/action-create-branch@v0
+        with:
+          branch: ${{ steps.branch.outputs.name }}
+
+      - name: Wait for branch to be available
+        run: sleep 3
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.branch.outputs.name }}
+
+      - name: Create various changes
+        run: |
+          echo "New file" > new-file.txt
+          mkdir -p nested/deep
+          echo "Nested file" > nested/deep/file.txt
+          echo "Another file" > another.txt
+
+      - name: Commit all changes (no files specified)
+        uses: ./
+        with:
+          commit_message: 'test: commit all changes'
+          id: 'all-changes-test'
+
+      - name: Verify all files were committed
+        run: |
+          git log -1 --oneline
+          git log -1 --format="%B" | grep -q "X-Commit-Rewrite-ID: all-changes-test" || (echo "Trailer not found!" && exit 1)
+          git diff HEAD~1 --name-only | grep -q "new-file.txt" || (echo "new-file.txt not in commit!" && exit 1)
+          git diff HEAD~1 --name-only | grep -q "nested/deep/file.txt" || (echo "nested/deep/file.txt not in commit!" && exit 1)
+          git diff HEAD~1 --name-only | grep -q "another.txt" || (echo "another.txt not in commit!" && exit 1)
+
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true
+
+  test-auto-branch:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate branch name
+        run: echo "name=test-branch-auto-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
+
+      - name: Create test branch
+        uses: Songmu/action-create-branch@v0
+        with:
+          branch: ${{ steps.branch.outputs.name }}
+
+      - name: Wait for branch to be available
+        run: sleep 3
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.branch.outputs.name }}
+
+      - name: Create test content
+        run: |
+          echo "Branch detection test" > branch-test.txt
+
+      - name: Commit without specifying branch
+        uses: ./
+        with:
+          commit_message: 'test: auto branch detection'
+          id: 'branch-test'
+          files: branch-test.txt
+
+      - name: Verify commit was created
+        run: |
+          git log -1 --oneline
+          git log -1 --format="%B" | grep -q "X-Commit-Rewrite-ID: branch-test" || (echo "Trailer not found!" && exit 1)
+
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true
+
+  test-sequential:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate branch name
+        run: echo "name=test-branch-sequential-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+        id: branch
+
+      - name: Create test branch
+        uses: Songmu/action-create-branch@v0
+        with:
+          branch: ${{ steps.branch.outputs.name }}
+
+      - name: Wait for branch to be available
+        run: sleep 3
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.branch.outputs.name }}
+
+      - name: Initial commit
+        run: |
+          echo "Version 1" > sequential.txt
+
+      - name: Commit v1
+        uses: ./
+        with:
+          commit_message: 'test: sequential v1'
+          id: 'sequential-test'
+          files: sequential.txt
+
+      - name: Update to v2
+        run: |
+          echo "Version 2" > sequential.txt
+
+      - name: Rewrite to v2
+        uses: ./
+        with:
+          commit_message: 'test: sequential v2'
+          id: 'sequential-test'
+          files: sequential.txt
+
+      - name: Update to v3
+        run: |
+          echo "Version 3" > sequential.txt
+
+      - name: Rewrite to v3
+        uses: ./
+        with:
+          commit_message: 'test: sequential v3'
+          id: 'sequential-test'
+          files: sequential.txt
+
+      - name: Verify only one commit exists
+        run: |
+          COMMIT_COUNT=$(git log --oneline --grep="sequential" | wc -l)
+          echo "Found $COMMIT_COUNT commits with 'sequential'"
+          if [ "$COMMIT_COUNT" -ne 1 ]; then
+            echo "Expected 1 commit, found $COMMIT_COUNT"
+            exit 1
+          fi
+
+      - name: Cleanup test branch
+        if: always()
+        run: |
+          git push origin --delete "${{ steps.branch.outputs.name }}" || true

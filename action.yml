@@ -1,11 +1,11 @@
-name: 'Commit or Rewrite (Signed)'
-description: 'Creates signed/verified commits or rewrites existing ones using GitHub API. Supports GitHub App tokens for verified commits without GPG keys.'
+name: 'Commit or Rewrite'
+description: 'Smart GitHub Action that creates or amends commits. Rewrites HEAD commit if it has matching ID, otherwise creates new commit. All commits are signed via GitHub API.'
 inputs:
   commit_message:
     description: 'Commit message (can be multiline)'
     required: true
-  trailer_id:
-    description: 'Unique identifier for the trailer (e.g., changelog-update)'
+  id:
+    description: 'Unique identifier for amending commits (e.g., changelog-update)'
     required: true
   branch:
     description: 'Target branch (auto-detects current branch if not specified)'
@@ -71,7 +71,7 @@ runs:
       id: check-trailer
       shell: bash
       env:
-        TRAILER_ID: ${{ inputs.trailer_id }}
+        TRAILER_ID: ${{ inputs.id }}
       run: |
         # Check if HEAD commit has our trailer using git interpret-trailers
         COMMIT_MSG=$(git log -1 --format=%B)
@@ -114,7 +114,7 @@ runs:
         BRANCH: ${{ steps.detect-branch.outputs.branch }}
         FILES_LIST: ${{ steps.check-changes.outputs.files_list }}
         COMMIT_MESSAGE: ${{ inputs.commit_message }}
-        TRAILER_ID: ${{ inputs.trailer_id }}
+        TRAILER_ID: ${{ inputs.id }}
         ACTION_PATH: ${{ github.action_path }}
         GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
