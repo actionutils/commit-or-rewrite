@@ -113,21 +113,15 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         BRANCH: ${{ steps.detect-branch.outputs.branch }}
         FILES_LIST: ${{ steps.check-changes.outputs.files_list }}
-        COMMIT_MESSAGE: ${{ inputs.commit_message }}
-        TRAILER_ID: ${{ inputs.id }}
         ACTION_PATH: ${{ github.action_path }}
         GITHUB_REPOSITORY: ${{ github.repository }}
+        FULL_MESSAGE: |
+          ${{ inputs.commit_message }}
+
+          X-Commit-Rewrite-ID: ${{ inputs.id }}
       run: |
-        # Create commit message with trailer
-        FULL_MESSAGE="${COMMIT_MESSAGE}
-
-        X-Commit-Rewrite-ID: ${TRAILER_ID}"
-
-        # Get the script path relative to the action directory
-        SCRIPT_PATH="${ACTION_PATH}/run-ghcp.sh"
-
         # Commit using ghcp
-        "$SCRIPT_PATH" -- commit \
+        "${ACTION_PATH}/run-ghcp.sh" commit \
           -r "$GITHUB_REPOSITORY" \
           -b "$BRANCH" \
           -m "$FULL_MESSAGE" \
