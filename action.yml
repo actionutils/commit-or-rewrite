@@ -51,8 +51,8 @@ runs:
           FILES=$(git diff --name-only HEAD; git diff --cached --name-only HEAD; git ls-files --others --exclude-standard)
         fi
 
-        # Process files list (dedupe, convert to space-separated, trim)
-        FILES_LIST=$(echo "$FILES" | sort -u | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+        # Process files list (keep newline-separated for commit-action)
+        FILES_LIST=$(echo "$FILES" | sort -u)
 
         # Store files list for later use
         echo "files_list=$FILES_LIST" >> $GITHUB_OUTPUT
@@ -92,46 +92,24 @@ runs:
       if: steps.check-changes.outputs.has_changes == 'true' && steps.check-trailer.outputs.should_reset == 'true'
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-        BRANCH: ${{ steps.detect-branch.outputs.branch }}
         PARENT_SHA: ${{ steps.check-trailer.outputs.parent_sha }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
-        echo "Resetting branch to parent commit: $PARENT_SHA"
-
-        # Use GitHub API to update the branch reference to parent
-        curl -X PATCH \
-          -H "Authorization: token $GITHUB_TOKEN" \
-          -H "Accept: application/vnd.github.v3+json" \
-          "https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs/heads/$BRANCH" \
-          -d "{\"sha\":\"$PARENT_SHA\",\"force\":true}"
+        echo "Resetting to parent commit: $PARENT_SHA"
+        # Reset local repository to parent commit
+        git reset --hard "$PARENT_SHA"
 
     - name: Create commit with trailer
       if: steps.check-changes.outputs.has_changes == 'true'
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-        BRANCH: ${{ steps.detect-branch.outputs.branch }}
-        FILES_LIST: ${{ steps.check-changes.outputs.files_list }}
-        COMMIT_MESSAGE: ${{ inputs.commit_message }}
-        TRAILER_ID: ${{ inputs.id }}
-        ACTION_PATH: ${{ github.action_path }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-      run: |
-        # Create commit message with trailer
-        FULL_MESSAGE="${COMMIT_MESSAGE}
+      uses: suzuki-shunsuke/commit-action@v0.0.11
+      with:
+        fail_on_self_push: false
+        github_token: ${{ inputs.github_token }}
+        commit_message: |
+          ${{ inputs.commit_message }}
 
-        X-Commit-Rewrite-ID: ${TRAILER_ID}"
-
-        # Get the script path relative to the action directory
-        SCRIPT_PATH="${ACTION_PATH}/run-ghcp.sh"
-
-        # Commit using ghcp
-        "$SCRIPT_PATH" -- commit \
-          -r "$GITHUB_REPOSITORY" \
-          -b "$BRANCH" \
-          -m "$FULL_MESSAGE" \
-          $FILES_LIST
+          X-Commit-Rewrite-ID: ${{ inputs.id }}
+        branch: ${{ steps.detect-branch.outputs.branch }}
+        files: ${{ steps.check-changes.outputs.files_list }}
 
     - name: Sync local git state with remote
       if: steps.check-changes.outputs.has_changes == 'true'
@@ -144,8 +122,4 @@ runs:
         git fetch origin "$BRANCH"
 
         # Reset the current branch to match remote
-        # This updates HEAD and the index without touching the working tree
-        git reset "origin/$BRANCH"
-
-        # Clean up the index to match HEAD (discard staged changes)
-        git reset --mixed HEAD
+        git reset --hard "origin/$BRANCH"
