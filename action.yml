@@ -80,8 +80,9 @@ runs:
         if [ "$TRAILER_VALUE" = "$TRAILER_ID" ]; then
           echo "HEAD has matching trailer (X-Commit-Rewrite-ID: $TRAILER_ID)"
           echo "should_reset=true" >> $GITHUB_OUTPUT
-          # Store parent SHA for later use
-          PARENT_SHA=$(git rev-parse HEAD~1)
+          # Store parent SHA for later use (works even in shallow clones)
+          # The commit object contains parent SHA even if parent commit is not fetched
+          PARENT_SHA=$(git log -1 --format=%P HEAD | head -1)
           echo "parent_sha=$PARENT_SHA" >> $GITHUB_OUTPUT
         else
           echo "HEAD does not have matching trailer"
